@@ -1,0 +1,15 @@
+2
+pista 1 (dr
+pag Yarima constancia
+doc Lautaro retiro
+doc Mariano retiro
+pag Lorenzo fondonegro
+doc Albert comprobante
+doc Constanza constancia
+doc Lorenzo fondonegro
+pag Albert comprobante
+pag Constanza constancia
+doc Pablo retiro
+doc Yarima constancia
+doc da1vid retiro
+pista 2 (aev))
