@@ -6,32 +6,27 @@
 # Ult. Modif: 01 Jul 2016
 
 import sys
-from random import randint, choice
 from math import floor
 
-class pila(object):
-	def __init__(self, n):
-		self.top = -1
-		self.pila = [None for i in range(n)]
-		self.lenght = len(self.pila)
+class Pila():
+    """ Implementación de Pilas."""
+    def __init__(self, n):
+        self.pila = [None for x in range(n)]
+        self.top = -1
+        self.elementos = n
 
-	def empty(self):
-		return self.top == 0
+    def push(self, x):
+        """ Agrega un elemento a la pila."""
+        self.top += 1
+        self.pila[self.top] = x
 
-	def push(self, x):
-		if self.top == self.lenght:
-			print('La pila está llena')
-			return 0
-		self.top = self.top + 1
-		self.pila[self.top] = x
-
-	def pop(self, x):
-		if self.empty():
-			print('La pila está vacía')
-		elemento = self.top
-		self.top = None
-		self.top = self.top - 1
-		return elemento
+    def pop(self):
+        """ Elimina un elemento de la pila."""
+        if self.top == -1:
+            raise IndexError('La pila está vacía, no se puede eliminar otro ' +
+                             'elemento.')
+        self.top -= 1
+        return self.pila[self.top + 1]
 
 class lista_doble_enlazada(object):
 	def __init__(self, clave):
@@ -48,9 +43,9 @@ class lista_doble_enlazada(object):
 		self.nelements += 1
 		return 1
 
-	def buscar(self, x):
+	def buscar(self, t):
 		x = self.head
-		while x != None and x.clave != k:
+		while x != None and x.tipo != t:
 			x = x.next
 		return x 
 
@@ -60,6 +55,14 @@ class lista_doble_enlazada(object):
 		if elemento.next != None: elemento.next.prev = elemento.prev
 		if elemento.prev == None: self.head = elemento.next
 		self.nelements -= 1
+
+	def _busqueda(self):
+		x = self.head
+		a = []
+		while x != None:
+			a.append(x.tipo)
+			x = x.next
+		return a 
 
 class _cola(object):
 	"""Clase para crear una cola
@@ -141,8 +144,6 @@ class hash_table(object):
 	Atributos:
 		tabla: Arreglo de m slots que guarda los valores
 		slots: Número de slots (espacios) que tiene la tabla
-		p:
-		c:
 		maxiter:
 	"""
 	def __init__(self, m):
@@ -244,6 +245,26 @@ class hash_table(object):
 			self.tabla[self.hash1(k)] = lista_doble_enlazada(None)
 		if self.tabla[self.hash2(k)].clave != None and self.tabla[self.hash2(k)].clave == k:
 			self.tabla[self.hash1(k)] = lista_doble_enlazada(None)
+
+def levenshtein(nombre , pista):
+    N = len(nombre)
+    P = len(pista)
+    
+    if len(nombre) > len(pista):
+        nombre, pista = pista, nombre
+        N, P = N, P
+        
+    distancia = range(N+1)
+    for i in range(1,(P+1)):
+        previous, distancia = distancia, [i]+[0]*N
+        for j in range(1,N+1):
+            agregar, eliminar = previous[j]+1, distancia[j-1]+1
+            sustituir = previous[j-1]
+            if nombre[j-1] != pista[i-1]:
+                sustituir = sustituir + 1
+            distancia[j] = min(agregar, eliminar, sustituir)
+            
+    return distancia[N]
 
 def generador_primos(ui: int, uf = None):
 	"""Generador de un arreglo de números primos en un intervalo dado
@@ -374,6 +395,69 @@ def procesar_pagos(pays):
 		clave = calcular_ascii(nombre)
 		yield pago(clave, nombre, tipo)
 
+def producir_salida(salidapagos, nosaldran, sospechosos):
+
+	with open('salida.txt', 'w') as f:
+		f.write('pista ')
+		for sospechoso in sospechosos:
+			f.write(sospechoso+' ')
+		
+		f.write('\n')
+		f.write('\n')
+		for element in salidapagos:
+			i = element.index(' ')
+			nombre = element[:i]
+			tipo = element[i+1:]
+			f.write(nombre + ' ' + tipo + '\n')
+
+		f.write('\n')
+
+		for element in nosaldran:
+			i = element.index(' ')
+			nombre = element[:i]
+			tipo = element[i+1:]
+			f.write(nombre + ' ' + tipo + '\n')
+
+
+def descifrar_pista(clues):
+	""".
+	Modifica una expresión, a la Notación Polaca Inversa
+	La función usa como operandos binarios las letras: r, e, l, s
+	(prioridad desde el más bajo al más alto donde 'r' es menor prioridad y 's'
+	mayor prioridad).
+	"""
+	completa = ''
+	for element in clues:
+		i = element.index(' ')
+		completa += element[i+1:]	
+	completa = completa.replace(' ', '')
+
+	cont = Pila(len(completa))
+	res = []
+	for i in range(len(completa)):
+	    if completa[i] == '(':
+	        cont.push(completa[i])
+	    elif completa[i] != 'r' and completa[i] != 'e' and completa[i] != 'l' \
+	            and completa[i] != 's' and completa[i] != ')':
+	        res.append(completa[i])
+	    elif completa[i] == ')':
+	        while cont.top != -1 and cont.pila[cont.top] != '(':
+	            res.append(cont.pop())
+	        if cont.pila[cont.top] == '(':
+	            cont.pop()
+	        completa[i].strip(')')
+	    else:
+	        while cont.top != -1 and cont.pila[cont.top] == 's':
+	            res.append(cont.pop())
+	        cont.push(completa[i])
+
+	while cont.top != -1:
+	    res.append(cont.pop())
+	tot = ''
+	for i in range(len(res)):
+	    tot += res[i]
+	return tot
+
 def main():
 	
 	print('\n >> Sistema para identificar al sospechoso del robo de dace << \n')
@@ -397,7 +481,7 @@ def main():
 			if result == -1:
 				print('Rehash was needed. Restart iteration')
 				break
-			print('Pago válido añadido a la tabla:', pago.nombre)
+			#print('Pago válido añadido a la tabla:', pago.nombre)
 		else:
 			break
 
@@ -408,9 +492,71 @@ def main():
 			if result == -1:
 				print('Rehash was needed. Restart iteration')
 				break
-			print('Documento válido añadido a la tabla:', documento.nombre)
+			#print('Documento válido añadido a la tabla:', documento.nombre)
 		else:
 			break
+
+	# Utilizamos la notación polaca inversa para descifrar la pista
+	pista = descifrar_pista(clues)
+	print(pista)
+	
+	# Calculamos la distancia entre la pista y las personas de la cola
+	distancias = []
+	for persona in queue:
+		distancia = levenshtein('pista', persona)
+		distancias.append(str(distancia) +' pista '+ persona)
+
+	minima = 1000000000000
+	for cadenas in distancias:
+		minima = min(int(cadenas[0]), minima)
+
+	sospechosos = []
+
+	for x in distancias:
+		if str(minima) in x:
+			i = x.index(' ')
+			final = (i + len('pista'))+2
+			sospechosos.append(x[final:])
+
+	# Calculamos los que pudieron retirar documento
+	salidapagos = []
+	nosaldran = []
+	for persona in queue:
+		clavepersona = calcular_ascii(persona)
+		x, y = tabla_docs.buscar(clavepersona)
+		w, z = tabla_pagos.buscar(clavepersona)
+		
+		wb, zb, docsx, docsy = ['w'], ['z'], ['x'], ['y']
+		
+		if w != None:
+			wb = w._busqueda()
+		if z != None:
+			zb = z._busqueda()
+		if x != None:
+			docsx = x._busqueda()
+		if y != None:
+			docsy = y._busqueda()
+
+		for doc in docsx:
+			if doc in wb:
+				salidapagos.append(persona+' '+doc)
+			if doc in zb:
+				salidapagos.append(persona+' '+doc)
+			if doc != 'x':
+				nosaldran.append(persona+' '+doc)
+
+		for doc in docsy:
+			if doc in wb:
+				salidapagos.append(persona+' '+doc)
+			if doc in zb:
+				salidapagos.append(persona+' '+doc)
+			if doc != 'y':
+				nosaldran.append(persona+' '+doc)
+
+	print(salidapagos)
+	print(nosaldran)
+
+	producir_salida(salidapagos, nosaldran, sospechosos)
 
 if (__name__ == '__main__'):
 	main()
